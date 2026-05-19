@@ -1,0 +1,105 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+body {
+  background-color: #f8fafc;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #334155;
+}
+
+/* Gradient Header Ala Aplikasi Medis Modern */
+.custom-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%);
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+/* Elevasi Card & Efek Hover */
+.main-card,
+.result-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.icon-box {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-box-sm {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form Styling */
+.form-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+  border-color: #cbd5e1;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+  border-radius: 10px;
+}
+
+.input-group-text {
+  color: #64748b;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.12);
+}
+
+/* Animasi Pulse untuk Ikon Jantung */
+.animate-pulse {
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Efek Muncul Lembut untuk Hasil Skrining */
+#resultCard {
+  animation: fadeInSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fw-extrabold {
+  font-weight: 800;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
