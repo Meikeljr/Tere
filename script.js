@@ -4,19 +4,19 @@ document.getElementById('strokeForm').addEventListener('submit', function (e) {
   // ==========================================
   // 1. AMBIL MASUKAN/INPUT DARI USER
   // ==========================================
-  const age = parseFloat(document.getElementById('age').value);
-  const weight = parseFloat(document.getElementById('weight').value);
-  const height = parseFloat(document.getElementById('height').value);
-  const hypertension = parseInt(document.getElementById('hypertension').value); // 1 = Ya, 0 = Tidak
-  const diabetes = parseInt(document.getElementById('diabetes').value);         // 1 = Ya, 0 = Tidak
-  const cholesterol = parseInt(document.getElementById('cholesterol').value);      // 1 = Ya, 0 = Tidak
-  const familyHistory = parseInt(document.getElementById('familyHistory').value);  // 1 = Ya, 0 = Tidak
-  const smoking = document.getElementById('smoking').value;                        // 'tidak', 'pernah', 'aktif'
-  const exercise = document.getElementById('exercise').value;                      // 'rutin', 'kurang', 'jarang'
+  const age = parseFloat(document.getElementById('age').value) || 0;
+  const weight = parseFloat(document.getElementById('weight').value) || 0;
+  const height = parseFloat(document.getElementById('height').value) || 0;
+  const hypertension = parseInt(document.getElementById('hypertension').value) || 0; // 1 = Ya, 0 = Tidak
+  const diabetes = parseInt(document.getElementById('diabetes').value) || 0;         // 1 = Ya, 0 = Tidak
+  const cholesterol = parseInt(document.getElementById('cholesterol').value) || 0;      // 1 = Ya, 0 = Tidak
+  const familyHistory = parseInt(document.getElementById('familyHistory').value) || 0;  // 1 = Ya, 0 = Tidak
+  const smoking = document.getElementById('smoking').value;                         // 'tidak', 'pernah', 'aktif'
+  const exercise = document.getElementById('exercise').value;                        // 'rutin', 'kurang', 'jarang'
 
   // Hitung Nilai Antropometri (BMI)
   const heightM = height / 100;
-  const bmi = (weight / (heightM * heightM)).toFixed(1);
+  const bmi = heightM > 0 ? (weight / (heightM * heightM)).toFixed(1) : 0;
   const isObese = bmi >= 25.0;
 
   // ==========================================
@@ -24,33 +24,30 @@ document.getElementById('strokeForm').addEventListener('submit', function (e) {
   // ==========================================
   let cfList = [];
 
-  // Evaluasi Faktor Hipertensi (Pakar = 0.9)
-  if (hypertension === 1) cfList.push(0.9 * 1.0);
+  // Evaluasi Penyakit Komorbid Utama
+  if (hypertension === 1) cfList.push(0.85); // Hipertensi (Pemicu Utama)
+  if (diabetes === 1) cfList.push(0.65);     // Diabetes
+  if (cholesterol === 1) cfList.push(0.55);  // Kolesterol
 
-  // Evaluasi Faktor Diabetes (Pakar = 0.7)
-  if (diabetes === 1) cfList.push(0.7 * 1.0);
+  // Evaluasi Perilaku Merokok
+  if (smoking === 'aktif') cfList.push(0.75);
+  else if (smoking === 'pernah') cfList.push(0.35);
 
-  // Evaluasi Faktor Kolesterol (Pakar = 0.6)
-  if (cholesterol === 1) cfList.push(0.6 * 1.0);
+  // Evaluasi Obesitas (BMI >= 25.0)
+  if (isObese) cfList.push(0.50);
 
-  // Evaluasi Faktor Merokok
-  if (smoking === 'aktif') cfList.push(0.8 * 1.0);
-  else if (smoking === 'pernah') cfList.push(0.4 * 1.0);
+  // Evaluasi Usia (Kategori Gradual)
+  if (age >= 60) cfList.push(0.60);
+  else if (age >= 40) cfList.push(0.40);
 
-  // Evaluasi Obesitas (BMI >= 25.0) (Pakar = 0.6)
-  if (isObese) cfList.push(0.6 * 1.0);
-
-  // Evaluasi Usia (>= 40 Tahun) (Pakar = 0.5)
-  if (age >= 40) cfList.push(0.5 * 1.0);
-
-  // Evaluasi Riwayat Keluarga (Pakar = 0.5)
-  if (familyHistory === 1) cfList.push(0.5 * 1.0);
+  // Evaluasi Riwayat Keluarga
+  if (familyHistory === 1) cfList.push(0.40);
 
   // Evaluasi Aktivitas Olahraga
-  if (exercise === 'jarang') cfList.push(0.4 * 1.0);
-  else if (exercise === 'kurang') cfList.push(0.2 * 1.0);
+  if (exercise === 'jarang') cfList.push(0.35);
+  else if (exercise === 'kurang') cfList.push(0.20);
 
-  // Kombinasi Sekuensial CF (CF Combine)
+  // Hitung Kombinasi Sekuensial CF (CF Combine)
   let cfCombine = 0;
   if (cfList.length > 0) {
     cfCombine = cfList[0];
@@ -66,9 +63,8 @@ document.getElementById('strokeForm').addEventListener('submit', function (e) {
   // ==========================================
   let listSaranKlinis = [];
 
-  // Saran Spesifik 1: Berdasarkan Penyakit Komorbid
   if (hypertension === 1) {
-    listSaranKlinis.push("<strong>Garam & Tekanan Darah:</strong> Batasi konsumsi garam dapur maksimal 1 sendok teh/hari dan patuhi jadwal minum obat darah tinggi secara rutin sesuai rekomendasi dokter.");
+    listSaranKlinis.push("<strong>Garam & Tekanan Darah:</strong> Batasi konsumsi garam dapur maksimal 1 sendok teh/hari dan patuhi jadwal minum obat darah tinggi secara rutin.");
   }
   if (diabetes === 1) {
     listSaranKlinis.push("<strong>Gula Darah:</strong> Hindari makanan/minuman manis tinggi gula dan lakukan kontrol kadar gula darah secara berkala.");
@@ -76,25 +72,17 @@ document.getElementById('strokeForm').addEventListener('submit', function (e) {
   if (cholesterol === 1) {
     listSaranKlinis.push("<strong>Lemak & Kolesterol:</strong> Batasi makanan berlemak jenuh/gorengan serta periksakan profil lipid darah secara rutin.");
   }
-
-  // Saran Spesifik 2: Berdasarkan BMI / Berat Badan
   if (isObese) {
     listSaranKlinis.push(`<strong>Indeks Massa Tubuh (BMI ${bmi}):</strong> Anda terdeteksi Obesitas. Turunkan berat badan secara bertahap melalui pengaturan pola makan kalori seimbang.`);
   }
-
-  // Saran Spesifik 3: Berdasarkan Perilaku Merokok
   if (smoking === 'aktif') {
-    listSaranKlinis.push("<strong>Penghentian Merokok:</strong> Hentikan kebiasaan merokok total. Zat kimia rokok mengentalkan darah dan merusak dinding pembuluh darah otak.");
+    listSaranKlinis.push("<strong>Penghentian Merokok:</strong> Hentikan kebiasaan merokok total. Zat kimia rokok mengentalkan darah dan merusak dinding pembuluh darah.");
   } else if (smoking === 'pernah') {
-    listSaranKlinis.push("<strong>Pemulihan Pembuluh Darah:</strong> Pertahankan keputusan untuk tidak merokok lagi agar proses pemulihan dinding pembuluh darah tetap optimal.");
+    listSaranKlinis.push("<strong>Pemulihan Pembuluh Darah:</strong> Pertahankan keputusan untuk tidak merokok lagi agar pemulihan dinding pembuluh darah optimal.");
   }
-
-  // Saran Spesifik 4: Berdasarkan Kebiasaan Olahraga
   if (exercise === 'jarang' || exercise === 'kurang') {
     listSaranKlinis.push("<strong>Aktivitas Fisik:</strong> Tingkatkan frekuensi olahraga (seperti jalan cepat) minimal 150 menit per minggu atau 30-60 menit per hari, 3-5 kali seminggu.");
   }
-
-  // Saran Spesifik 5: Berdasarkan Usia & Riwayat Genetik
   if (age >= 40 || familyHistory === 1) {
     listSaranKlinis.push("<strong>Waspada Faktor Kerentanan:</strong> Karena faktor usia/genetik keluarga, lakukan pemeriksaan kesehatan rutin di Puskesmas terdekat.");
   }
@@ -106,52 +94,56 @@ document.getElementById('strokeForm').addEventListener('submit', function (e) {
   let warnaTema = "";
   let htmlSaranAkhir = "";
 
-  if (cfPercentage >= 70) {
+  // Ambang Batas Triase Klinis:
+  // - Risiko Tinggi : >= 75%
+  // - Risiko Sedang : 40% - 74%
+  // - Risiko Rendah : < 40%
+  if (cfPercentage >= 75) {
     statusKategori = "Risiko Tinggi (Sangat Rentan)";
     warnaTema = "danger";
 
     htmlSaranAkhir = `
-            <div class="alert alert-danger mb-3">
-                <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-octagon-fill me-2"></i>Instruksi Tindakan Medis Segera:</h6>
-                <p class="mb-1">Hasil analisis menunjukkan tingkat kerentanan tinggi. Sangat disarankan untuk segera berkonsultasi ke fasilitas kesehatan terdekat.</p>
-            </div>
-            <h6 class="fw-bold text-dark mb-2">Panduan Intervensi Mandiri (Sesuai Kondisi Anda):</h6>
-            <ul class="mb-0 ps-3">
-                ${listSaranKlinis.map(saran => `<li class="mb-2">${saran}</li>`).join('')}
-            </ul>
-        `;
+      <div class="alert alert-danger mb-3">
+        <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-octagon-fill me-2"></i>Instruksi Tindakan Medis Segera:</h6>
+        <p class="mb-1">Hasil analisis menunjukkan tingkat kerentanan tinggi. Sangat disarankan untuk segera berkonsultasi ke fasilitas kesehatan terdekat.</p>
+      </div>
+      <h6 class="fw-bold text-dark mb-2">Panduan Intervensi Mandiri (Sesuai Kondisi Anda):</h6>
+      <ul class="mb-0 ps-3">
+        ${listSaranKlinis.map(saran => `<li class="mb-2">${saran}</li>`).join('')}
+      </ul>
+    `;
   } else if (cfPercentage >= 40) {
     statusKategori = "Risiko Sedang (Waspada Dini)";
     warnaTema = "warning";
 
     htmlSaranAkhir = `
-            <div class="alert alert-warning mb-3">
-                <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Langkah Waspada Dini:</h6>
-                <p class="mb-1">Anda memiliki faktor risiko yang perlu diperbaiki sebelum berkembang menjadi komplikasi berat.</p>
-            </div>
-            <h6 class="fw-bold text-dark mb-2">Rekomendasi Perbaikan Gaya Hidup (Sesuai Input Anda):</h6>
-            <ul class="mb-0 ps-3">
-                ${listSaranKlinis.map(saran => `<li class="mb-2">${saran}</li>`).join('')}
-            </ul>
-        `;
+      <div class="alert alert-warning mb-3">
+        <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Langkah Waspada Dini:</h6>
+        <p class="mb-1">Anda memiliki faktor risiko yang perlu diperbaiki sebelum berkembang menjadi komplikasi berat.</p>
+      </div>
+      <h6 class="fw-bold text-dark mb-2">Rekomendasi Perbaikan Gaya Hidup (Sesuai Input Anda):</h6>
+      <ul class="mb-0 ps-3">
+        ${listSaranKlinis.map(saran => `<li class="mb-2">${saran}</li>`).join('')}
+      </ul>
+    `;
   } else {
     statusKategori = "Risiko Rendah (Kondisi Baik)";
     warnaTema = "success";
 
     htmlSaranAkhir = `
-            <div class="alert alert-success mb-3">
-                <h6 class="fw-bold mb-2"><i class="bi bi-check-circle-fill me-2"></i>Kondisi Tubuh Terkontrol dengan Baik:</h6>
-                <p class="mb-0">Selamat! Saat ini Anda berada dalam kategori risiko rendah. Pertahankan pola hidup sehat ini.</p>
-            </div>
-            <h6 class="fw-bold text-dark mb-2">Edukasi Pencegahan (Gerakan CERDIK Kemenkes RI):</h6>
-            <ul class="mb-0 ps-3">
-                <li class="mb-1"><strong>C - Cek Kesehatan:</strong> Rutin periksa tekanan darah dan gula darah secara berkala.</li>
-                <li class="mb-1"><strong>E - Enyahkan Asap Rokok:</strong> Pertahankan lingkungan bebas dari asap rokok.</li>
-                <li class="mb-1"><strong>R - Rajin Aktivitas Fisik:</strong> Jaga kebiasaan berolahraga teratur 30 menit sehari.</li>
-                <li class="mb-1"><strong>D - Diet Seimbang:</strong> Konsumsi buah dan sayur serta batasi gula, garam, dan minyak.</li>
-                <li class="mb-1"><strong>I - Istirahat Cukup & K - Kelola Stres:</strong> Tidur 7-8 jam sehari dan hindari stres berlebih.</li>
-            </ul>
-        `;
+      <div class="alert alert-success mb-3">
+        <h6 class="fw-bold mb-2"><i class="bi bi-check-circle-fill me-2"></i>Kondisi Tubuh Terkontrol dengan Baik:</h6>
+        <p class="mb-0">Selamat! Saat ini Anda berada dalam kategori risiko rendah. Pertahankan pola hidup sehat ini.</p>
+      </div>
+      <h6 class="fw-bold text-dark mb-2">Edukasi Pencegahan (Gerakan CERDIK Kemenkes RI):</h6>
+      <ul class="mb-0 ps-3">
+        <li class="mb-1"><strong>C - Cek Kesehatan:</strong> Rutin periksa tekanan darah dan gula darah secara berkala.</li>
+        <li class="mb-1"><strong>E - Enyahkan Asap Rokok:</strong> Pertahankan lingkungan bebas dari asap rokok.</li>
+        <li class="mb-1"><strong>R - Rajin Aktivitas Fisik:</strong> Jaga kebiasaan berolahraga teratur 30 menit sehari.</li>
+        <li class="mb-1"><strong>D - Diet Seimbang:</strong> Konsumsi buah dan sayur serta batasi gula, garam, dan minyak.</li>
+        <li class="mb-1"><strong>I - Istirahat Cukup & K - Kelola Stres:</strong> Tidur 7-8 jam sehari dan hindari stres berlebih.</li>
+      </ul>
+    `;
   }
 
   // ==========================================
